@@ -1,0 +1,10 @@
+__pycache__/
+
+generated/
+!generated/.keep
+
+temp/
+!temp/.keep
+
+uploads/
+!uploads/.keep
