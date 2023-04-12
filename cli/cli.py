@@ -5,11 +5,12 @@ import sys
 
 def initArgParse() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
-        usage="%(prog)s [OPTION] [FILE]...",
+        usage="%(prog)s [OPTION]...",
         description="Forms waveforms in STDIN for futher processing in generative UGC content."
     )
+    requiredNamed = parser.add_argument_group('required named arguments')
+    requiredNamed.add_argument("-b", "--beat", help="set ups beat path (.wav)", type=str, required=True)
 
-    parser.add_argument("-b", "--beat", help="set ups beat path (.wav)", type=str)
     parser.add_argument("-s", "--smooth", 
         help="set smooth factor by int value\nthe less -- the smoother",
         default=8, type=int, required=False)
