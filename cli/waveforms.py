@@ -35,13 +35,16 @@ class WaveformGenerator:
         
         return smoothed
 
-    
+    def duration(self) -> float:
+        self.__logger("get duration")
+        
+        return librosa.get_duration(y=self.__y, sr=self.__sr)
+
+    def sample_rate(self) -> int:
+        return self.__sr
         
 
 class WaveformLoader:
     def load(beat_path: str, verbose: bool) -> WaveformGenerator:
         y, sr = librosa.load(beat_path)
         return WaveformGenerator(y, sr, verbose)
-
-    
-    
