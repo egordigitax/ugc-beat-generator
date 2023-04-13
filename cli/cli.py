@@ -7,7 +7,7 @@ from frames import FrameGeneratorParams, UGCParams, FrameGeneratorLoader, FrameG
 def initArgParse() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         usage="%(prog)s [OPTION]...",
-        description="Forms waveforms in STDIN for futher processing in generative UGC content."
+        description="Generates frames for UGC"
     )
 
 
