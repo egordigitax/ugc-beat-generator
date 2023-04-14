@@ -19,7 +19,7 @@ def initArgParse() -> argparse.ArgumentParser:
 
     required_named.add_argument("--shade_path", 
         help="path to shade image (alpha, .png)",
-        type=str, default="Shadow.png", required=False)
+        type=str, required=True)
 
     required_named.add_argument("-o", "--output_path", 
         help="path to resulting frames path",
@@ -49,16 +49,13 @@ def initArgParse() -> argparse.ArgumentParser:
         help="target height",
         type=int, default=1280, required=False)
 
-
     parser.add_argument("-s", "--smooth", 
         help="set smooth factor by int value\nthe less -- the smoother",
         default=8, type=int, required=False)
-
-
    
-   
-    parser.add_argument("-v", "--verbose", 
-        help="verbose computations", action='store_true', required=False)
+    parser.add_argument("-v", "--verbose",
+        help="verbose computations", 
+        action='store_true', required=False, default=False)
 
 
     parser.add_argument(
