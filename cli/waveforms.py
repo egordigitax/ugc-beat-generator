@@ -3,7 +3,17 @@ import librosa
 import numpy as np
 from scipy.signal import hilbert, chirp
 
-class WaveformGenerator:
+class WaveformGeneratorInterface:
+    def process(self, smooth_factor: int) -> np.ndarray:
+       pass
+
+    def duration(self) -> float:
+        pass
+
+    def sample_rate(self) -> int:
+        pass
+    
+class WaveformGenerator(WaveformGeneratorInterface):
     def __init__(self, y: List[float], sr: int, verbose: bool = False) -> None:
         self.__y = y
         self.__sr = sr
@@ -44,7 +54,32 @@ class WaveformGenerator:
         return self.__sr
         
 
+
+class FakeWaveformGenerator(WaveformGeneratorInterface):
+    def __init__(self, verbose: bool = False) -> None:
+        self.__verbose = verbose
+
+    def __logger(self, msg: str):
+        if self.__verbose:
+            print(msg)
+
+
+    def process(self, smooth_factor: int) -> np.ndarray:
+       return np.array([0.0, 1.0])
+
+    def duration(self) -> float:
+        return 2.0 / 30
+
+    def sample_rate(self) -> int:
+        return 2
+        
+
+
 class WaveformLoader:
     def load(beat_path: str, verbose: bool) -> WaveformGenerator:
         y, sr = librosa.load(beat_path)
         return WaveformGenerator(y, sr, verbose)
+    
+    def load_demo(verbose: bool) -> WaveformGenerator:
+        return FakeWaveformGenerator(verbose)
+

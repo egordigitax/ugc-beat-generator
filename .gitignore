@@ -1,1 +1,3 @@
 cli/__pycache__
+.venv/
+.idea/

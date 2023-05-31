@@ -1,12 +1,10 @@
-from PIL import Image, ImageFont, ImageDraw
+from PIL import ImageDraw
 from waveforms import WaveformGenerator
 from dataclasses import dataclass
 from PIL import Image, ImageFilter
 import numpy as np
 import math
 from joblib import Parallel, delayed
-
-
 
 
 @dataclass
@@ -16,6 +14,7 @@ class FrameGeneratorParams:
     waveform_generator: WaveformGenerator
     jobs: int
 
+
 @dataclass
 class UGCParams:
     avatar_path: str
@@ -24,6 +23,8 @@ class UGCParams:
     width: int
     height: int
     smooth: int
+    blur_radius: int
+
 
 @dataclass
 class ProcessingCache:
@@ -34,20 +35,16 @@ class ProcessingCache:
     max_digits: int = None
 
 
-
-
 class FrameGenerator:
-    def __init__(self, 
-        generator_params: FrameGeneratorParams,
-        ugc_params: UGCParams,
-        verbose: bool) -> None:
+    def __init__(self,
+                 generator_params: FrameGeneratorParams,
+                 ugc_params: UGCParams,
+                 verbose: bool) -> None:
         self.__generator_params = generator_params
         self.__ugc_params = ugc_params
         self.__shade = Image.open(self.__generator_params.shade_path)
         self.__verbose = verbose
         self.__logger("generator created")
-
-        
 
     def __logger(self, msg: str):
         if self.__verbose:
@@ -66,67 +63,61 @@ class FrameGenerator:
         alpha.paste(circle.crop((rad, rad, rad * 2, rad * 2)), (w - rad, h - rad))
         avatar.putalpha(alpha)
         return avatar
-    
-        
-    def __create_save_frame_img_proto(self, 
-        intensity: float, avatar: Image, background: Image) -> Image:
+
+    def create_frame(self, intensity: float, avatar: Image, background: Image) -> Image:
+        return self.__create_save_frame_img_proto(intensity, avatar, background)
+
+    def __create_save_frame_img_proto(self,
+                                      intensity: float, avatar: Image, background: Image) -> Image:
 
         reds = np.zeros([self.__ugc_params.height, self.__ugc_params.width, 4], dtype=np.float32)
-        
+
         frame = Image.fromarray((reds * 255).astype(np.uint8), "RGBA")
 
         def new_size():
-            return int((1.0 - intensity) * self.__ugc_params.height + (intensity) * self.__ugc_params.height * 2)
-        def new_offset(size):
-            return int((1.0 - intensity) * (self.__ugc_params.width - self.__ugc_params.height)/2 + (intensity) * (self.__ugc_params.height - size)/2)
+            return int(self.__ugc_params.height * (intensity + 1.))
 
+        def new_offset():
+            x_offset = int((self.__ugc_params.width - new_size()) / 2.0)
+            y_offset = int((self.__ugc_params.height - new_size()) / 2.0)
+
+            return x_offset, y_offset
 
         blurred_resized = background.resize((new_size(), new_size()))
 
-
-        frame.paste(blurred_resized, (new_offset(self.__ugc_params.height * 2), 0))
-
+        frame.paste(blurred_resized, new_offset())
 
         frame = Image.alpha_composite(frame, self.__shade)
-        
 
         frame.paste(avatar, (160, 246), avatar)
-        
-        
 
         return frame
 
-
-
-    def __create_save_frame_img(self, 
-        frame_num: int, max_digits: int, intensity: float, avatar: Image, background: Image):
+    def __create_save_frame_img(self,
+                                frame_num: int, max_digits: int, intensity: float, avatar: Image, background: Image):
 
         new_img = self.__create_save_frame_img_proto(intensity, avatar, background)
         new_img.save('{}/img{}.png'
-            .format(self.__generator_params.output_path, str(frame_num).zfill(max_digits)))
-
-
+                     .format(self.__generator_params.output_path, str(frame_num).zfill(max_digits)))
 
     def generator(self, cache: ProcessingCache, frame_num: int):
-        
+
         frame_to_time = float(frame_num) / float(self.__ugc_params.framerate)
         audio_time_sample = int(frame_to_time * self.__generator_params.waveform_generator.sample_rate())
-
 
         if audio_time_sample < len(cache.intensities):
             intensity = cache.intensities[audio_time_sample]
 
-            self.__create_save_frame_img(
-                frame_num, cache.max_digits, intensity, 
-                cache.avatar, cache.background)
-    
+            self.__logger("generator: FTT {} ATS {} I {}".format(frame_to_time, audio_time_sample, intensity))
 
+            self.__create_save_frame_img(
+                frame_num, cache.max_digits, intensity,
+                cache.avatar, cache.background)
 
     def process(self):
         cache = ProcessingCache()
 
         self.__logger("opening avatar")
-
 
         avatar = Image.open(self.__ugc_params.avatar_path)
         avatar = avatar.resize((self.__ugc_params.avatar_size, self.__ugc_params.avatar_size))
@@ -134,16 +125,13 @@ class FrameGenerator:
 
         self.__logger("opening background")
 
-        
         cache.background = Image.open(self.__ugc_params.avatar_path)
         cache.background.putalpha(255)
-    
-        cache.background = cache.background.filter(ImageFilter.GaussianBlur(10))
-        cache.background = cache.background.resize((self.__ugc_params.height, self.__ugc_params.height))
-        
-        
-        cache.avatar = self.__make_corners(avatar, 40)
 
+        cache.background = cache.background.resize((self.__ugc_params.height, self.__ugc_params.height))
+        cache.background = cache.background.filter(ImageFilter.GaussianBlur(self.__ugc_params.blur_radius))
+
+        cache.avatar = self.__make_corners(avatar, 40)
 
         self.__logger("forming duration")
 
@@ -151,22 +139,14 @@ class FrameGenerator:
 
         total_frames_count = duration * self.__ugc_params.framerate
 
-
-        cache.max_digits =  int(math.log10(total_frames_count))+1
+        cache.max_digits = int(math.log10(total_frames_count)) + 1
         cache.intensities = self.__generator_params.waveform_generator.process(self.__ugc_params.smooth)
 
         Parallel(n_jobs=self.__generator_params.jobs, verbose=0 if not self.__verbose else total_frames_count)(
-            delayed(self.generator)(cache, i) for i in range (total_frames_count))
-
-        
+            delayed(self.generator)(cache, i) for i in range(total_frames_count))
 
 
 class FrameGeneratorLoader:
-    def load(generator_params: FrameGeneratorParams, 
-        ugc_params: UGCParams, verbose: bool) -> FrameGenerator:
-
+    def load(generator_params: FrameGeneratorParams,
+             ugc_params: UGCParams, verbose: bool) -> FrameGenerator:
         return FrameGenerator(generator_params, ugc_params, verbose)
-        
-
-
-
