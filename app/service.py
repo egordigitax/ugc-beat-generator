@@ -46,12 +46,6 @@ def process_track(smooth, temp_path, song_path, image_path, beat_name, author_na
 
     y_perc = np.convolve(y_perc, kernel, mode='valid')
 
-    # print("Starting hax")
-    #
-    # y_perc[0:2000] = y_perc[2000:4000]
-    # y_perc[-2001:-1] = y_perc[-4000:-2000]
-    #
-
     print("Loading images")
 
     original_image = Image.open(image_path)

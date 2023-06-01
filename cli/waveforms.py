@@ -38,7 +38,11 @@ class WaveformGenerator(WaveformGeneratorInterface):
         self.__logger("smoothing")
         kernel_size = int(float(self.__sr) / float(smooth_factor))
         kernel = np.ones(kernel_size) / kernel_size
-        smoothed = np.convolve(curved, kernel, mode='same')
+
+        kernel_offset = int(kernel_size / 2)
+        padded = np.concatenate((curved[0:kernel_offset], curved, curved[-kernel_offset:-1]))
+
+        smoothed = np.convolve(padded, kernel, mode='valid')
 
         self.__logger("removing artifacts")
         smoothed[0:2000] = smoothed[2000:4000]
