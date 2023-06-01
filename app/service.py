@@ -41,14 +41,20 @@ def process_track(smooth, temp_path, song_path, image_path, beat_name, author_na
 
     kernel_size = int(sr/smooth)
     kernel = np.ones(kernel_size) / kernel_size
-    y_perc = np.convolve(y_perc, kernel, mode='same')
+
+    kernel_offset = int(kernel_size / 2)
+    y_perc = np.concatenate((y_perc[0:kernel_offset], y_perc, y_perc[-kernel_offset:-1]))
+
+    y_perc = np.convolve(y_perc, kernel, mode='valid')
+
+    y_perc = (y_perc - np.min(y_perc)) / (np.max(y_perc) - np.min(y_perc))
 
 
-    print("Starting hax")
-
-    y_perc[0:2000] = y_perc[2000:4000]
-    y_perc[-2001:-1] = y_perc[-4000:-2000]
-
+    # print("Starting hax")
+    #
+    # y_perc[0:2000] = y_perc[2000:4000]
+    # y_perc[-2001:-1] = y_perc[-4000:-2000]
+    #
 
     print("Loading images")
 
