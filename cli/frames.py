@@ -120,16 +120,27 @@ class FrameGenerator:
         self.__logger("opening avatar")
 
         avatar = Image.open(self.__ugc_params.avatar_path)
+        avatar = avatar.convert("RGBA")
         avatar = avatar.resize((self.__ugc_params.avatar_size, self.__ugc_params.avatar_size))
         avatar.putalpha(255)
+
+        self.__logger("opened {}".format(avatar.mode))
 
         self.__logger("opening background")
 
         cache.background = Image.open(self.__ugc_params.avatar_path)
+        cache.background = cache.background.convert("RGBA")
         cache.background.putalpha(255)
 
+        self.__logger("resizing background")
+
         cache.background = cache.background.resize((self.__ugc_params.height, self.__ugc_params.height))
+
+        self.__logger("filtering background")
+
         cache.background = cache.background.filter(ImageFilter.GaussianBlur(self.__ugc_params.blur_radius))
+
+        self.__logger("make corners")
 
         cache.avatar = self.__make_corners(avatar, 40)
 
