@@ -1,7 +1,7 @@
 from typing import List
 import librosa
 import numpy as np
-from scipy.signal import hilbert, chirp
+from scipy.signal import hilbert
 
 
 class WaveformGeneratorInterface:
@@ -78,9 +78,12 @@ class FakeWaveformGenerator(WaveformGeneratorInterface):
 
 
 class WaveformLoader:
-    def load(beat_path: str, verbose: bool) -> WaveformGenerator:
-        y, sr = librosa.load(beat_path)
-        return WaveformGenerator(y, sr, verbose)
 
-    def load_demo(verbose: bool) -> WaveformGenerator:
+    @staticmethod
+    def load(beat_path: str, verbose: bool) -> WaveformGeneratorInterface:
+        y, sr = librosa.load(beat_path)
+        return WaveformGenerator(y, int(sr), verbose)
+
+    @staticmethod
+    def load_demo(verbose: bool) -> WaveformGeneratorInterface:
         return FakeWaveformGenerator(verbose)
