@@ -1,5 +1,5 @@
 from PIL import ImageDraw
-from waveforms import WaveformGenerator
+from waveforms import WaveformGeneratorInterface, WaveformGeneratorParams
 from dataclasses import dataclass
 from PIL import Image, ImageFilter
 import numpy as np
@@ -11,7 +11,7 @@ from joblib import Parallel, delayed
 class FrameGeneratorParams:
     shade_path: str
     output_path: str
-    waveform_generator: WaveformGenerator
+    waveform_generator: WaveformGeneratorInterface
     jobs: int
 
 
@@ -22,8 +22,8 @@ class UGCParams:
     framerate: int
     width: int
     height: int
-    smooth: int
     blur_radius: int
+    waveform_generator_params: WaveformGeneratorParams
 
 
 @dataclass
@@ -151,7 +151,7 @@ class FrameGenerator:
         total_frames_count = duration * self.__ugc_params.framerate
 
         cache.max_digits = int(math.log10(total_frames_count)) + 1
-        cache.intensities = self.__generator_params.waveform_generator.process(self.__ugc_params.smooth)
+        cache.intensities = self.__generator_params.waveform_generator.process(self.__ugc_params.waveform_generator_params)
 
         Parallel(n_jobs=self.__generator_params.jobs, verbose=0 if not self.__verbose else total_frames_count)(
             delayed(self.generator)(cache, i) for i in range(total_frames_count))

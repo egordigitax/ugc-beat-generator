@@ -1,5 +1,5 @@
 import argparse
-from waveforms import WaveformGenerator, WaveformLoader
+from waveforms import WaveformGenerator, WaveformLoader, WaveformGeneratorParams
 import numpy as np
 import sys
 from frames import FrameGeneratorParams, UGCParams, FrameGeneratorLoader, FrameGenerator
@@ -56,6 +56,29 @@ def initArgParse() -> argparse.ArgumentParser:
                         help="set smooth factor by int value\nthe less -- the smoother",
                         default=8, type=int, required=False)
 
+    parser.add_argument("-w", "--widening",
+                        help="set widening factor by float value\nthe less -- the smoother",
+                        default=0.5, type=float, required=False)
+
+    parser.add_argument("--percussive_influence",
+                        help="set percussive part influence (0.0 -- 1.0)\n",
+                        default=0.5, type=float, required=False)
+
+    parser.add_argument("--harmonic_influence",
+                        help="set harmonic part influence (0.0 -- 1.0)\n",
+                        default=0.5, type=float, required=False)
+
+    parser.add_argument("--percussive_margin",
+                        help="set percussive part isolation"
+                             "\n 1.0 -- default, more -- more isolated\n",
+                        default=1.0, type=float, required=False)
+
+    parser.add_argument("--harmonic_margin",
+                        help="set harmonic part isolation"
+                             "\n 1.0 -- default, more -- more isolated\n",
+                        default=1.0, type=float, required=False)
+
+
     parser.add_argument("-v", "--verbose",
                         help="verbose computations",
                         action='store_true', required=False, default=False)
@@ -86,10 +109,14 @@ def main() -> None:
             waveform_generator = WaveformLoader.load(args.beat, args.verbose)
         generator_params = FrameGeneratorParams(
             args.shade_path, args.output_path, waveform_generator, args.jobs)
+        waveform_generator_params = WaveformGeneratorParams(
+            args.smooth, args.widening, args.percussive_influence, args.harmonic_influence,
+            args.percussive_margin, args.harmonic_margin
+        )
 
         ugc_params = UGCParams(args.avatar_path,
                                args.avatar_size, args.framerate, args.width,
-                               args.height, args.smooth, args.blur_radius)
+                               args.height, args.blur_radius, waveform_generator_params)
 
         FrameGeneratorLoader.load(generator_params, ugc_params, args.verbose).process()
 
