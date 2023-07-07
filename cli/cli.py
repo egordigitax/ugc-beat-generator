@@ -85,7 +85,7 @@ def initArgParse() -> argparse.ArgumentParser:
 
     parser.add_argument(
         "--version", action="version",
-        version=f"{parser.prog} version 1.1."
+        version=f"{parser.prog} version 1.2.0"
     )
 
     experimental.add_argument(
