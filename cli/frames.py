@@ -151,13 +151,15 @@ class FrameGenerator:
         total_frames_count = duration * self.__ugc_params.framerate
 
         cache.max_digits = int(math.log10(total_frames_count)) + 1
-        cache.intensities = self.__generator_params.waveform_generator.process(self.__ugc_params.waveform_generator_params)
+        cache.intensities = \
+            self.__generator_params.waveform_generator.process(self.__ugc_params.waveform_generator_params)
 
         Parallel(n_jobs=self.__generator_params.jobs, verbose=0 if not self.__verbose else total_frames_count)(
             delayed(self.generator)(cache, i) for i in range(total_frames_count))
 
 
 class FrameGeneratorLoader:
+    @staticmethod
     def load(generator_params: FrameGeneratorParams,
              ugc_params: UGCParams, verbose: bool) -> FrameGenerator:
         return FrameGenerator(generator_params, ugc_params, verbose)

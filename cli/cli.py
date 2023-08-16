@@ -78,20 +78,24 @@ def initArgParse() -> argparse.ArgumentParser:
                              "\n 1.0 -- default, more -- more isolated\n",
                         default=1.0, type=float, required=False)
 
-
     parser.add_argument("-v", "--verbose",
                         help="verbose computations",
                         action='store_true', required=False, default=False)
 
+    parser.add_argument("--output_type", help="select output presentation. available types: \n "
+                                              "* frames (--output_type=frames) \n"
+                                              "* raw (--output_type=raw)\n",
+                        default="frames", type=str, required=False)
+
     parser.add_argument(
         "--version", action="version",
-        version=f"{parser.prog} version 1.2.0"
+        version=f"{parser.prog} version 1.3.0"
     )
 
     experimental.add_argument(
         "--demo", required=False, default=False,
         action='store_true',
-        help="for dev purposes (generates test frames)"
+        help="for dev purposes (generates test frames or amplitudes)"
     )
 
     return parser
@@ -107,18 +111,27 @@ def main() -> None:
             args.framerate = 2
         else:
             waveform_generator = WaveformLoader.load(args.beat, args.verbose)
-        generator_params = FrameGeneratorParams(
-            args.shade_path, args.output_path, waveform_generator, args.jobs)
+
         waveform_generator_params = WaveformGeneratorParams(
             args.smooth, args.widening, args.percussive_influence, args.harmonic_influence,
             args.percussive_margin, args.harmonic_margin
         )
 
-        ugc_params = UGCParams(args.avatar_path,
-                               args.avatar_size, args.framerate, args.width,
-                               args.height, args.blur_radius, waveform_generator_params)
+        if args.output_type == "frames":
+            generator_params = FrameGeneratorParams(
+                args.shade_path, args.output_path, waveform_generator, args.jobs)
 
-        FrameGeneratorLoader.load(generator_params, ugc_params, args.verbose).process()
+            ugc_params = UGCParams(args.avatar_path,
+                                   args.avatar_size, args.framerate, args.width,
+                                   args.height, args.blur_radius, waveform_generator_params)
+
+            FrameGeneratorLoader.load(generator_params, ugc_params, args.verbose).process()
+
+        elif args.output_type == "raw":
+            intensities = waveform_generator.process(waveform_generator_params)
+            intensities.dump("{}/raw".format(args.output_path))
+        else:
+            print("unsupported --output_type mode, please read the docs", file=sys.stderr)
 
     except Exception as err:
         print(err, file=sys.stderr)

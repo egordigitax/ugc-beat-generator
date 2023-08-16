@@ -70,7 +70,7 @@ class WaveformGenerator(WaveformGeneratorInterface):
         return self.__sr
 
 
-class FakeWaveformGenerator(WaveformGeneratorInterface):
+class DemoWaveformGenerator(WaveformGeneratorInterface):
     def __init__(self, verbose: bool = False) -> None:
         self.__verbose = verbose
 
@@ -87,6 +87,24 @@ class FakeWaveformGenerator(WaveformGeneratorInterface):
     def sample_rate(self) -> int:
         return 2
 
+    class DemoWaveformGenerator(WaveformGeneratorInterface):
+        def __init__(self, verbose: bool = False) -> None:
+            self.__verbose = verbose
+
+        def __logger(self, msg: str):
+            if self.__verbose:
+                print(msg)
+
+        def process(self, params: WaveformGeneratorParams) -> np.ndarray:
+            return np.array([0.0, 1.0])
+
+        def duration(self) -> float:
+            return 2.0 / 30
+
+        def sample_rate(self) -> int:
+            return 2
+
+
 
 class WaveformLoader:
 
@@ -97,4 +115,4 @@ class WaveformLoader:
 
     @staticmethod
     def load_demo(verbose: bool) -> WaveformGeneratorInterface:
-        return FakeWaveformGenerator(verbose)
+        return DemoWaveformGenerator(verbose)
