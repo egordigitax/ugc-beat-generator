@@ -15,7 +15,6 @@ class WaveformGeneratorParams:
     harmonic_margin: float
 
 
-
 class WaveformGeneratorInterface:
     def process(self, params: WaveformGeneratorParams) -> np.ndarray:
         pass
@@ -25,7 +24,6 @@ class WaveformGeneratorInterface:
 
     def sample_rate(self) -> int:
         pass
-
 
 
 class WaveformGenerator(WaveformGeneratorInterface):
@@ -46,7 +44,6 @@ class WaveformGenerator(WaveformGeneratorInterface):
         self.__logger("normalization")
         normalized = np.abs(percussive)
 
-
         self.__logger("smoothing")
         kernel_size = int(float(self.__sr) / float(params.smooth_factor))
         kernel = np.ones(kernel_size) / kernel_size
@@ -57,7 +54,8 @@ class WaveformGenerator(WaveformGeneratorInterface):
         smoothed = np.convolve(padded, kernel, mode='valid')
 
         self.__logger("normalization 2")
-        normalized_again = params.widening_factor * ((smoothed - np.min(smoothed)) / (np.max(smoothed) - np.min(smoothed)))
+        normalized_again = params.widening_factor * (
+                    (smoothed - np.min(smoothed)) / (np.max(smoothed) - np.min(smoothed)))
 
         return normalized_again
 
@@ -103,7 +101,6 @@ class DemoWaveformGenerator(WaveformGeneratorInterface):
 
         def sample_rate(self) -> int:
             return 2
-
 
 
 class WaveformLoader:

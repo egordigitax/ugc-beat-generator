@@ -10,8 +10,8 @@ def initArgParse() -> argparse.ArgumentParser:
         description="Generates frames for UGC"
     )
 
-    general = parser.add_argument_group("General Options")
     required_named = parser.add_argument_group("required named arguments")
+    general = parser.add_argument_group("General Options")
     experimental = parser.add_argument_group("experimental arguments (caution, fixed layout)")
     graphics = parser.add_argument_group("graphics rendering arguments")
 
@@ -36,7 +36,7 @@ def initArgParse() -> argparse.ArgumentParser:
                               help="avatar new size",
                               type=int, default=400, required=False)
 
-    # Engine
+    # Graphics
 
     graphics.add_argument("--width",
                           help="target width",
@@ -61,18 +61,18 @@ def initArgParse() -> argparse.ArgumentParser:
                           help="applies cyclic overlay footage to video by id, pass -1 for random",
                           type=int, required=False)
 
+    graphics.add_argument("-f", "--framerate",
+                        help="target framerate",
+                        type=int, default=30, required=False)
+
+    graphics.add_argument("--shade_path",
+                        help="required in legacy mode. path to shade image (alpha, .png)",
+                        type=str, default=None, required=False)
+
     # Common
     general.add_argument("--legacy",
                         help="uses legacy version of generator",
                         required=False, action='store_true')
-
-    general.add_argument("--shade_path",
-                        help="required in legacy mode. path to shade image (alpha, .png)",
-                        type=str, default=None, required=False)
-
-    general.add_argument("-f", "--framerate",
-                        help="target framerate",
-                        type=int, default=30, required=False)
 
     general.add_argument("-j", "--jobs",
                         help="number of parallel jobs",

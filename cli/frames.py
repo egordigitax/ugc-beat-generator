@@ -25,6 +25,7 @@ class UGCParams:
     blur_radius: int
     waveform_generator_params: WaveformGeneratorParams
 
+
 @dataclass
 class GraphicsParams:
     output_path: str

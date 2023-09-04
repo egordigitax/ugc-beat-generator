@@ -2,3 +2,4 @@ cli/__pycache__
 .venv/
 .idea/
 histo-cli/
+sdk
