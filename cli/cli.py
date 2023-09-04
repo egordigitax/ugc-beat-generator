@@ -126,7 +126,7 @@ def initArgParse() -> argparse.ArgumentParser:
 def main() -> None:
     parser = initArgParse()
     args = parser.parse_args()
-    print(args.overlay_template_id)
+
     try:
         if args.legacy and not args.shade_path:
             raise Exception('--shade_path required while run in --legacy mode.')
@@ -150,7 +150,7 @@ def main() -> None:
                                    args.avatar_size, args.framerate, args.width,
                                    args.height, args.blur_radius, waveform_generator_params)
 
-            FrameGeneratorLoader.load(generator_params, ugc_params, args.verbose).process()
+            FrameGeneratorLoader.load(generator_params, ugc_params, args.verbose, args.legacy).process()
 
         elif args.output_type == "raw":
             intensities = waveform_generator.process(waveform_generator_params)

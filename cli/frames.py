@@ -42,7 +42,8 @@ class ProcessingCache:
 
 
 class BaseFrameGenerator:
-    pass
+    def process(self):
+        pass
 
 
 class FrameGeneratorLegacy(BaseFrameGenerator):
