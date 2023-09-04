@@ -1,7 +1,7 @@
 import argparse
-from waveforms import WaveformLoader, WaveformGeneratorParams
+from services.waveforms import WaveformLoader, WaveformGeneratorParams
 import sys
-from frames import FrameGeneratorParams, UGCParams, FrameGeneratorLoader, FrameGenerator
+from services.frames import FrameGeneratorParams, UGCParams, FrameGeneratorLoader
 
 
 def initArgParse() -> argparse.ArgumentParser:
