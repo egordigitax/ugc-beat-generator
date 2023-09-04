@@ -7,15 +7,29 @@ from frames import FrameGeneratorParams, UGCParams, FrameGeneratorLoader, FrameG
 def initArgParse() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         usage="%(prog)s [OPTION]...",
-        description="Generates frames for UGC"
+        description="Generates frames for UGC",
+        add_help=False
     )
 
-    required_named = parser.add_argument_group("required named arguments")
+    misc = parser.add_argument_group("Misc Options")
+    required_named = parser.add_argument_group("Required Options")
     general = parser.add_argument_group("General Options")
-    experimental = parser.add_argument_group("experimental arguments (caution, fixed layout)")
-    graphics = parser.add_argument_group("graphics rendering arguments")
+    graphics = parser.add_argument_group("Graphic Rendering Options")
+    music_analyzer = parser.add_argument_group("Music Analyzer Options")
+
+    # Misc
+
+    misc.add_argument("-h", "--help", action="help", help="show this help message and exit")
+
+    misc.add_argument("--version", action="version",
+                        version=f"{parser.prog} version 1.3.0")
+
+    misc.add_argument("--demo", required=False, default=False,
+                              action='store_true',
+                              help="for dev purposes (generates test frames or amplitudes)")
 
     # Required
+
     required_named.add_argument("-b", "--beat", help="set ups beat path (.wav)", type=str, required=True)
 
     required_named.add_argument("-o", "--output_path",
@@ -25,16 +39,6 @@ def initArgParse() -> argparse.ArgumentParser:
     required_named.add_argument("-a", "--avatar_path",
                                 help="path to avatar (.png)",
                                 type=str, required=True)
-
-    # Experimental
-
-    experimental.add_argument("--blur_radius",
-                              help="blur radius (intensity)",
-                              type=int, default=50, required=False)
-
-    experimental.add_argument("--avatar_size",
-                              help="avatar new size",
-                              type=int, default=400, required=False)
 
     # Graphics
 
@@ -69,7 +73,16 @@ def initArgParse() -> argparse.ArgumentParser:
                         help="required in legacy mode. path to shade image (alpha, .png)",
                         type=str, default=None, required=False)
 
-    # Common
+    graphics.add_argument("--blur_radius",
+                              help="blur radius (intensity)",
+                              type=int, default=50, required=False)
+
+    graphics.add_argument("--avatar_size",
+                              help="avatar new size",
+                              type=int, default=400, required=False)
+
+    # General
+
     general.add_argument("--legacy",
                         help="uses legacy version of generator",
                         required=False, action='store_true')
@@ -77,32 +90,6 @@ def initArgParse() -> argparse.ArgumentParser:
     general.add_argument("-j", "--jobs",
                         help="number of parallel jobs",
                         type=int, default=8, required=False)
-
-    general.add_argument("-s", "--smooth",
-                        help="set smooth factor by int value\nthe less -- the smoother",
-                        default=8, type=int, required=False)
-
-    general.add_argument("-w", "--widening",
-                        help="set widening factor by float value\nthe less -- the smoother",
-                        default=0.5, type=float, required=False)
-
-    general.add_argument("--percussive_influence",
-                        help="set percussive part influence (0.0 -- 1.0)\n",
-                        default=0.5, type=float, required=False)
-
-    general.add_argument("--harmonic_influence",
-                        help="set harmonic part influence (0.0 -- 1.0)\n",
-                        default=0.5, type=float, required=False)
-
-    general.add_argument("--percussive_margin",
-                        help="set percussive part isolation"
-                             "\n 1.0 -- default, more -- more isolated\n",
-                        default=1.0, type=float, required=False)
-
-    general.add_argument("--harmonic_margin",
-                        help="set harmonic part isolation"
-                             "\n 1.0 -- default, more -- more isolated\n",
-                        default=1.0, type=float, required=False)
 
     general.add_argument("-v", "--verbose",
                         help="verbose computations",
@@ -113,12 +100,33 @@ def initArgParse() -> argparse.ArgumentParser:
                                               "* raw (--output_type=raw)\n",
                         default="frames", type=str, required=False)
 
-    parser.add_argument("--version", action="version",
-                        version=f"{parser.prog} version 1.3.0")
+    # Music Analyzer
 
-    parser.add_argument("--demo", required=False, default=False,
-                              action='store_true',
-                              help="for dev purposes (generates test frames or amplitudes)")
+    music_analyzer.add_argument("-s", "--smooth",
+                        help="set smooth factor by int value\nthe less -- the smoother",
+                        default=8, type=int, required=False)
+
+    music_analyzer.add_argument("-w", "--widening",
+                        help="set widening factor by float value\nthe less -- the smoother",
+                        default=0.5, type=float, required=False)
+
+    music_analyzer.add_argument("--percussive_influence",
+                        help="set percussive part influence (0.0 -- 1.0)\n",
+                        default=0.5, type=float, required=False)
+
+    music_analyzer.add_argument("--harmonic_influence",
+                        help="set harmonic part influence (0.0 -- 1.0)\n",
+                        default=0.5, type=float, required=False)
+
+    music_analyzer.add_argument("--percussive_margin",
+                        help="set percussive part isolation"
+                             "\n 1.0 -- default, more -- more isolated\n",
+                        default=1.0, type=float, required=False)
+
+    music_analyzer.add_argument("--harmonic_margin",
+                        help="set harmonic part isolation"
+                             "\n 1.0 -- default, more -- more isolated\n",
+                        default=1.0, type=float, required=False)
 
     return parser
 
