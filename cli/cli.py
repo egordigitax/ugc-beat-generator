@@ -18,7 +18,7 @@ def initArgParse() -> argparse.ArgumentParser:
     music_analyzer = parser.add_argument_group("Music Analyzer Options")
 
     # Misc Options
-    def __add_misc_arguments():
+    def add_misc_arguments() -> None:
         misc.add_argument("-h", "--help", action="help", help="show this help message and exit")
 
         misc.add_argument("--version", action="version",
@@ -29,7 +29,7 @@ def initArgParse() -> argparse.ArgumentParser:
                           help="for dev purposes (generates test frames or amplitudes)")
 
     # Required Options
-    def __add_required_arguments():
+    def add_required_arguments() -> None:
         required.add_argument("-b", "--beat", help="set ups beat path (.wav)", type=str, required=True)
 
         required.add_argument("-o", "--output_path",
@@ -41,7 +41,7 @@ def initArgParse() -> argparse.ArgumentParser:
                                     type=str, required=True)
 
     # Graphics Options
-    def __add_graphics_arguments():
+    def add_graphics_arguments() -> None:
         graphics.add_argument("--width",
                               help="target width",
                               type=int, default=720, required=False)
@@ -82,7 +82,7 @@ def initArgParse() -> argparse.ArgumentParser:
                                   type=int, default=400, required=False)
 
     # General Options
-    def __add_general_arguments():
+    def add_general_arguments() -> None:
         general.add_argument("--legacy",
                             help="uses legacy version of generator",
                             required=False, action='store_true')
@@ -101,7 +101,7 @@ def initArgParse() -> argparse.ArgumentParser:
                             default="frames", type=str, required=False)
 
     # Music Analyzer Options
-    def __add_music_analyzer_arguments():
+    def add_music_analyzer_arguments() -> None:
         music_analyzer.add_argument("-s", "--smooth",
                             help="set smooth factor by int value\nthe less -- the smoother",
                             default=8, type=int, required=False)
@@ -128,11 +128,11 @@ def initArgParse() -> argparse.ArgumentParser:
                                  "\n 1.0 -- default, more -- more isolated\n",
                             default=1.0, type=float, required=False)
 
-    __add_misc_arguments()
-    __add_required_arguments()
-    __add_general_arguments()
-    __add_graphics_arguments()
-    __add_music_analyzer_arguments()
+    add_misc_arguments()
+    add_required_arguments()
+    add_general_arguments()
+    add_graphics_arguments()
+    add_music_analyzer_arguments()
 
     return parser
 

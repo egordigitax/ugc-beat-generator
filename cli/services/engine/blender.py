@@ -80,7 +80,7 @@ class BlenderEngine(BaseEngine):
         elif isinstance(frames, range):
             return f'-s {frames.start} -e {frames.stop} -a'
         else:
-            raise ValueError('Frames argument needs to be int or range')
+            raise ValueError('Frames argument needs to be type int or range')
 
     @staticmethod
     def _remove_temp_file():

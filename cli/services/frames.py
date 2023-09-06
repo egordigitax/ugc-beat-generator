@@ -27,13 +27,6 @@ class UGCParams:
 
 
 @dataclass
-class GraphicsParams:
-    output_path: str
-
-    use_gpu: bool = True
-
-
-@dataclass
 class ProcessingCache:
     avatar: Image = None
     background: Image = None

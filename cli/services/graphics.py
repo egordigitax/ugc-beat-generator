@@ -2,14 +2,15 @@ from dataclasses import dataclass
 
 
 @dataclass
-class UGCGraphicsParams:
+class GraphicsGeneratorParams:
     template_id: int
     avatar_path: str
     width: int
     height: int
     blur_radius: int
 
-class UGCGraphicsGenerator:
+
+class GraphicsGenerator:
     def __init__(self):
         pass
 
