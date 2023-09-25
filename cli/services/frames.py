@@ -1,4 +1,6 @@
 from PIL import ImageDraw
+
+from .graphics import GraphicsGeneratorInterface, GraphicsGeneratorParams
 from .waveforms import WaveformGeneratorInterface, WaveformGeneratorParams
 from dataclasses import dataclass
 from PIL import Image, ImageFilter
@@ -12,6 +14,7 @@ class FrameGeneratorParams:
     shade_path: str
     output_path: str
     waveform_generator: WaveformGeneratorInterface
+    graphics_generator: GraphicsGeneratorInterface
     jobs: int
 
 
@@ -24,6 +27,7 @@ class UGCParams:
     height: int
     blur_radius: int
     waveform_generator_params: WaveformGeneratorParams
+    graphics_generator_params: GraphicsGeneratorParams
 
 
 @dataclass

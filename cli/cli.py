@@ -152,17 +152,31 @@ def main() -> None:
             waveform_generator = WaveformLoader.load(args.beat, args.verbose)
 
         waveform_generator_params = WaveformGeneratorParams(
-            args.smooth, args.widening, args.percussive_influence, args.harmonic_influence,
-            args.percussive_margin, args.harmonic_margin
+            smooth_factor=args.smooth,
+            widening_factor=args.widening,
+            percussive_influence=args.percussive_influence,
+            harmonic_influence=args.harmonic_influence,
+            percussive_margin=args.percussive_margin,
+            harmonic_margin=args.harmonic_margin
         )
 
         if args.output_type == "frames":
             generator_params = FrameGeneratorParams(
-                args.shade_path, args.output_path, waveform_generator, args.jobs)
+                shade_path=args.shade_path,
+                output_path=args.output_path,
+                waveform_generator=waveform_generator,
+                jobs=args.jobs)
 
-            ugc_params = UGCParams(args.avatar_path,
-                                   args.avatar_size, args.framerate, args.width,
-                                   args.height, args.blur_radius, waveform_generator_params)
+            ugc_params = UGCParams(
+                avatar_path=args.avatar_path,
+                avatar_size=args.avatar_size,
+                framerate=args.framerate,
+                width=args.width,
+                height=args.height,
+                blur_radius=args.blur_radius,
+                waveform_generator_params=waveform_generator_params,
+                graphics_generator_params=
+            )
 
             FrameGeneratorLoader.load(generator_params, ugc_params, args.verbose, args.legacy).process()
 
