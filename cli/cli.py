@@ -1,4 +1,6 @@
 import argparse
+
+from cli.services.graphics import GraphicsGeneratorParams, GraphicsGeneratorLoader
 from services.waveforms import WaveformLoader, WaveformGeneratorParams
 import sys
 from services.frames import FrameGeneratorParams, UGCParams, FrameGeneratorLoader
@@ -40,6 +42,25 @@ def initArgParse() -> argparse.ArgumentParser:
                                     help="path to avatar (.png)",
                                     type=str, required=True)
 
+    # General Options
+    def add_general_arguments() -> None:
+        general.add_argument("--legacy",
+                            help="uses legacy version of generator",
+                            required=False, action='store_true')
+
+        general.add_argument("-j", "--jobs",
+                            help="number of parallel jobs",
+                            type=int, default=8, required=False)
+
+        general.add_argument("-v", "--verbose",
+                            help="verbose computations",
+                            action='store_true', required=False, default=False)
+
+        general.add_argument("--output_type", help="select output presentation. available types: \n "
+                                                  "* frames (--output_type=frames) \n"
+                                                  "* raw (--output_type=raw)\n",
+                            default="frames", type=str, required=False)
+
     # Graphics Options
     def add_graphics_arguments() -> None:
         graphics.add_argument("--width",
@@ -80,25 +101,6 @@ def initArgParse() -> argparse.ArgumentParser:
         graphics.add_argument("--avatar_size",
                                   help="avatar new size",
                                   type=int, default=400, required=False)
-
-    # General Options
-    def add_general_arguments() -> None:
-        general.add_argument("--legacy",
-                            help="uses legacy version of generator",
-                            required=False, action='store_true')
-
-        general.add_argument("-j", "--jobs",
-                            help="number of parallel jobs",
-                            type=int, default=8, required=False)
-
-        general.add_argument("-v", "--verbose",
-                            help="verbose computations",
-                            action='store_true', required=False, default=False)
-
-        general.add_argument("--output_type", help="select output presentation. available types: \n "
-                                                  "* frames (--output_type=frames) \n"
-                                                  "* raw (--output_type=raw)\n",
-                            default="frames", type=str, required=False)
 
     # Music Analyzer Options
     def add_music_analyzer_arguments() -> None:
@@ -151,6 +153,8 @@ def main() -> None:
         else:
             waveform_generator = WaveformLoader.load(args.beat, args.verbose)
 
+        graphics_generator = GraphicsGeneratorLoader.load(args.verbose)
+
         waveform_generator_params = WaveformGeneratorParams(
             smooth_factor=args.smooth,
             widening_factor=args.widening,
@@ -160,11 +164,23 @@ def main() -> None:
             harmonic_margin=args.harmonic_margin
         )
 
+        graphics_generator_params = GraphicsGeneratorParams(
+            scene_template_id=args.template_id,
+            user_info_template_id=args.user_info_template_id,
+            overlay_template_id=args.overlay_template_id,
+            enable_intro=args.enable_intro,
+            avatar_path=args.avatar_path,
+            width=args.width,
+            height=args.height,
+            blur_radius=args.blur_radius
+        )
+
         if args.output_type == "frames":
             generator_params = FrameGeneratorParams(
                 shade_path=args.shade_path,
                 output_path=args.output_path,
                 waveform_generator=waveform_generator,
+                graphics_generator=graphics_generator,
                 jobs=args.jobs)
 
             ugc_params = UGCParams(
@@ -175,7 +191,7 @@ def main() -> None:
                 height=args.height,
                 blur_radius=args.blur_radius,
                 waveform_generator_params=waveform_generator_params,
-                graphics_generator_params=
+                graphics_generator_params=graphics_generator_params
             )
 
             FrameGeneratorLoader.load(generator_params, ugc_params, args.verbose, args.legacy).process()
