@@ -1,6 +1,9 @@
+import os
 from dataclasses import dataclass
 from pathlib import Path
+from typing import List
 
+from PIL import Image
 
 
 @dataclass
@@ -35,11 +38,15 @@ class GraphicsGenerator:
         # self.blur_radius = params.blur_radius
         # self.verbose = verbose
 
-    def process_scene_frames(self) -> Path:
-        pass
+    def process_scene_frames(self) -> List[Image.Image]:
+        return [Image.open(f'sources/.output/main/{file}') for file in os.listdir("sources/.output/main") if file.endswith(".png")]
 
-    def process_user_info_frames(self) -> Path:
-        pass
+
+    def process_user_info_frames(self) -> List[Image.Image]:
+        return [Image.open(f'sources/.output/user/{file}') for file in os.listdir("sources/.output/user") if file.endswith(".png")]
+
+    def process_overlay_frames(self) -> List[Image.Image]:
+        return [Image.open(f'sources/.output/overlay/{file}') for file in os.listdir("sources/.output/overlay") if file.endswith(".png")]
 
 
 class GraphicsGeneratorLoader:

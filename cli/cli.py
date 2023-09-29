@@ -1,6 +1,6 @@
 import argparse
 
-from cli.services.graphics import GraphicsGeneratorParams, GraphicsGeneratorLoader
+from services.graphics import GraphicsGeneratorParams, GraphicsGeneratorLoader
 from services.waveforms import WaveformLoader, WaveformGeneratorParams
 import sys
 from services.frames import FrameGeneratorParams, UGCParams, FrameGeneratorLoader
@@ -65,14 +65,18 @@ def initArgParse() -> argparse.ArgumentParser:
     def add_graphics_arguments() -> None:
         graphics.add_argument("--width",
                               help="target width",
-                              type=int, default=720, required=False)
+                              type=int, default=1080, required=False)
 
         graphics.add_argument("--height",
                               help="target height",
-                              type=int, default=1280, required=False)
+                              type=int, default=1920, required=False)
 
         graphics.add_argument("--use-cpu", required=False, default=False,
                               action='store_true', help="use cpu computing device")
+
+        graphics.add_argument("--enable-intro", required=False, default=False,
+                              action='store_true', help="adds intro to the beginning of the video "
+                                                        "(reversed sequence animation)")
 
         graphics.add_argument("--samples",
                               help="set number of rendering samples. more samples - better quality",
@@ -83,6 +87,10 @@ def initArgParse() -> argparse.ArgumentParser:
                               type=int, required=False)
 
         graphics.add_argument("-ot", "--overlay-template-id",
+                              help="applies cyclic overlay footage to video by id, pass -1 for random",
+                              type=int, required=False)
+
+        graphics.add_argument("-ut", "--user-info-template-id",
                               help="applies cyclic overlay footage to video by id, pass -1 for random",
                               type=int, required=False)
 
@@ -181,7 +189,8 @@ def main() -> None:
                 output_path=args.output_path,
                 waveform_generator=waveform_generator,
                 graphics_generator=graphics_generator,
-                jobs=args.jobs)
+                jobs=args.jobs
+            )
 
             ugc_params = UGCParams(
                 avatar_path=args.avatar_path,
