@@ -12,8 +12,14 @@
 #
 # print('Testing UGC application legacy mode...')
 # os.system('.venv/bin/python3 cli.py -b tests/sources/demo.wav -a tests/sources/demo.png -o tests/result/ --shade_path tests/sources/Shadow.png --legacy --verbose')
+import os
+from PIL import Image
 
-arr = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+path = 'sources/.output/user'
 
-for i in range(0, 150):
-    print(arr[i % len(arr)])
+for file in [folder for folder in os.listdir(path) if folder.endswith('.png')]:
+    print(f'resizing {file}')
+    image = Image.open(path+'/'+file)
+    new_image = image.resize((720, 1280))
+    print(f'resized.')
+    new_image.save(path+'/'+file)

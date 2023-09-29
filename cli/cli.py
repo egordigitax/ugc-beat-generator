@@ -50,7 +50,7 @@ def initArgParse() -> argparse.ArgumentParser:
 
         general.add_argument("-j", "--jobs",
                             help="number of parallel jobs",
-                            type=int, default=8, required=False)
+                            type=int, default=16, required=False)
 
         general.add_argument("-v", "--verbose",
                             help="verbose computations",
@@ -65,11 +65,11 @@ def initArgParse() -> argparse.ArgumentParser:
     def add_graphics_arguments() -> None:
         graphics.add_argument("--width",
                               help="target width",
-                              type=int, default=1080, required=False)
+                              type=int, default=720, required=False)
 
         graphics.add_argument("--height",
                               help="target height",
-                              type=int, default=1920, required=False)
+                              type=int, default=1280, required=False)
 
         graphics.add_argument("--use-cpu", required=False, default=False,
                               action='store_true', help="use cpu computing device")

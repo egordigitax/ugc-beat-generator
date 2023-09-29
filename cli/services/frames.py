@@ -1,3 +1,4 @@
+from pathlib import Path
 from typing import List
 
 from PIL import ImageDraw
@@ -10,6 +11,8 @@ import blend_modes
 import numpy as np
 import math
 from joblib import Parallel, delayed
+from functools import wraps
+import time
 
 
 @dataclass
@@ -39,10 +42,11 @@ class ProcessingCache:
     background: Image.Image = None
     shade: Image.Image = None
     total_frames_count: int = None
-    scene_sequence: List[Image.Image] = None
-    user_info_sequence: List[Image.Image] = None
-    overlay_sequence: List[Image.Image] = None
+    scene_sequence: List[Path] = None
+    user_info_sequence: List[Path] = None
+    overlay_sequence: List[Path] = None
     intensities: np.ndarray = None
+    frames_intensity: List[float] = None
     max_digits: int = None
 
 
@@ -191,14 +195,12 @@ class FrameGenerator(BaseFrameGenerator):
     def create_frame(self, intensity: float, avatar: Image.Image, background: Image.Image) -> Image.Image:
         raise NotImplemented
 
-    @staticmethod
-    def img_to_np(image: Image.Image):
+    def img_to_np(self, image: Image.Image):
         np_arr = np.array(image)
         np_float = np_arr.astype(float)
         return np_float
 
-    @staticmethod
-    def np_to_img(np_float):
+    def np_to_img(self, np_float):
         img_decode = np.uint8(np_float)
         image = Image.fromarray(img_decode)
         return image
@@ -211,14 +213,14 @@ class FrameGenerator(BaseFrameGenerator):
 
         self.__logger('compositing...')
 
-        frame = Image.new("RGBA", (self.__ugc_params.width, self.__ugc_params.height), (255, 255, 255, 255))
-        frame.paste(scene_sequence_frame, None, scene_sequence_frame)
+        frame = scene_sequence_frame
         frame.paste(user_info_frame, None, user_info_frame)
 
         if not overlay_frame:
             return frame
 
-        frame = self.np_to_img(blend_modes.overlay(self.img_to_np(frame), self.img_to_np(overlay_frame), 0.1))  # можно использовать intensity
+        frame = self.np_to_img(blend_modes.overlay(self.img_to_np(frame), self.img_to_np(overlay_frame), 0.1))
+        # можно использовать intensity
         return frame
 
     def __create_save_frame_img(self,
@@ -238,25 +240,27 @@ class FrameGenerator(BaseFrameGenerator):
 
         def get_user_info_frame(_frame_num, _cache):
             if _frame_num < len(_cache.user_info_sequence):
-                return _cache.user_info_sequence[_frame_num]
+                return Image.open(_cache.user_info_sequence[_frame_num])
             else:
-                return _cache.user_info_sequence[-1]
+                return Image.open(_cache.user_info_sequence[-1])
 
         def get_overlay_frame(_frame_num, _cache):
             if _cache.overlay_sequence:
-                return _cache.overlay_sequence[_frame_num % len(_cache.overlay_sequence)]
+                return Image.open(_cache.overlay_sequence[_frame_num % len(_cache.overlay_sequence)])
             else:
                 return None
 
         def get_main_scene_frames(_intensity, _cache):
-            return _cache.scene_sequence[round(_intensity * (len(cache.scene_sequence) - 1))]
+            if frame_num >= len(_cache.scene_sequence):
+                return Image.open(_cache.scene_sequence[round(_intensity * (len(cache.scene_sequence) - 1))])
+            else:
+                return Image.open(_cache.scene_sequence[-frame_num - 1])
 
         frame_to_time = float(frame_num) / float(self.__ugc_params.framerate)
         audio_time_sample = int(frame_to_time * self.__generator_params.waveform_generator.sample_rate())
 
         if audio_time_sample < len(cache.intensities):
-            chunks = np.array_split(cache.intensities, cache.total_frames_count)
-            intensity = np.mean(chunks[frame_num])
+            intensity = cache.frames_intensity[frame_num]
 
             self.__logger("generator: FTT {} ATS {} I {}".format(frame_to_time, audio_time_sample, intensity))
 
@@ -319,6 +323,9 @@ class FrameGenerator(BaseFrameGenerator):
         cache.scene_sequence = self.__generator_params.graphics_generator.process_scene_frames()
         cache.user_info_sequence = self.__generator_params.graphics_generator.process_user_info_frames()
         cache.overlay_sequence = self.__generator_params.graphics_generator.process_overlay_frames()
+
+        chunks = np.array_split(cache.intensities, cache.total_frames_count)
+        cache.frames_intensity = [np.mean(i) for i in chunks]
 
         Parallel(n_jobs=self.__generator_params.jobs, verbose=0 if not self.__verbose else total_frames_count)(
             delayed(self.generator)(cache, i) for i in range(total_frames_count))
