@@ -2,4 +2,5 @@ cli/__pycache__
 .venv/
 .idea/
 sdk
-__pychache__
+__pycache__
+output/
