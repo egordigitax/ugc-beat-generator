@@ -43,21 +43,25 @@ class BlenderEngine(BaseEngine):
 
         if script is None:
             os.system(f'{str(self.engine_path)} -b {str(project_file)} -E {render_engine} '
+                      f'--python {str(self._create_temp_code_file(self.__null_func, width, height))} '
                       f'-o {str(Path(output) / "#")} {_frames_param} {params} -- --cycles-device {render_device}')
         else:
             os.system(f'{str(self.engine_path)} -b {str(project_file)} -E {render_engine} '
-                      f'--python {str(self._create_temp_code_file(script))} '
+                      f'--python {str(self._create_temp_code_file(script, width, height))} '
                       f'-o {str(Path(output) / "#")} {_frames_param} {params} -- --cycles-device {render_device}')
 
         self._remove_temp_file()
 
-    def _create_temp_code_file(self, func: Callable) -> Path:
+    def _create_temp_code_file(self, func: Callable, width, height) -> Path:
         with open(DEFAULT_TEMP_PATH, 'w') as file:
-            file.write(self._func_to_code(func))
+            file.write(self._func_to_code(func, width, height))
         return Path(DEFAULT_TEMP_PATH).absolute()
 
-    def _func_to_code(self, func: Callable) -> str:
-        INDENTS = 4
+    def __null_func(self):
+        print('Project adjustments done.')
+
+    def _func_to_code(self, func: Callable, width, height) -> str:
+        INDENTS = 8
 
         lines = inspect.getsource(func)
         lines = ':'.join(lines.split(':')[1:])
@@ -67,7 +71,9 @@ class BlenderEngine(BaseEngine):
 
         imports = f'import bpy\n' \
                   f'import sys\n' \
-                  f'sys.path.append("{self._work_path.drive}")\n\n'
+                  f'sys.path.append("{self._work_path.drive}")\n\n' \
+                  f'bpy.data.scenes["Scene"].render.resolution_x = {width}\n' \
+                  f'bpy.data.scenes["Scene"].render.resolution_y = {height}\n\n'
 
         source_code = imports + '\n'.join(lines_without_first_line_arr)
 

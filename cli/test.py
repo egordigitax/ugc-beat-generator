@@ -15,11 +15,15 @@
 import os
 from PIL import Image
 
-path = 'sources/.output/user'
+from services.graphics import GraphicsGenerator
 
-for file in [folder for folder in os.listdir(path) if folder.endswith('.png')]:
-    print(f'resizing {file}')
-    image = Image.open(path+'/'+file)
-    new_image = image.resize((720, 1280))
-    print(f'resized.')
-    new_image.save(path+'/'+file)
+# path = 'sources/.output/user'
+#
+# for file in [folder for folder in os.listdir(path) if folder.endswith('.png')]:
+#     print(f'resizing {file}')
+#     image = Image.open(path+'/'+file)
+#     new_image = image.resize((720, 1280))
+#     print(f'resized.')
+#     new_image.save(path+'/'+file)
+gg = GraphicsGenerator(False)
+gg.get_user_info_png('Skrillex', "Smell Like Teen Spirit")

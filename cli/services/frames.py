@@ -320,9 +320,15 @@ class FrameGenerator(BaseFrameGenerator):
         cache.intensities = \
             self.__generator_params.waveform_generator.process(self.__ugc_params.waveform_generator_params)
 
-        cache.scene_sequence = self.__generator_params.graphics_generator.process_scene_frames()
-        cache.user_info_sequence = self.__generator_params.graphics_generator.process_user_info_frames()
-        cache.overlay_sequence = self.__generator_params.graphics_generator.process_overlay_frames()
+        # cache.scene_sequence = self.__generator_params.graphics_generator.process_scene_frames()
+
+        cache.user_info_sequence = self.__generator_params.graphics_generator.process_user_info_frames(
+            1,
+            720,
+            1280
+        )
+
+        # cache.overlay_sequence = self.__generator_params.graphics_generator.process_overlay_frames()
 
         chunks = np.array_split(cache.intensities, cache.total_frames_count)
         cache.frames_intensity = [np.mean(i) for i in chunks]
