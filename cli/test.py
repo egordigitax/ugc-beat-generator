@@ -25,5 +25,5 @@ from services.graphics import GraphicsGenerator
 #     new_image = image.resize((720, 1280))
 #     print(f'resized.')
 #     new_image.save(path+'/'+file)
-gg = GraphicsGenerator(False)
-gg.get_user_info_png('Skrillex', "Smell Like Teen Spirit")
+os.system('rm output/final/*')
+os.system('python cli.py -b tests/sources/demo.wav -o output/final/ -a tests/sources/demo.png --shade_path tests/sources/Shadow.png -t 1 -ot 1 -ut 1 -un Yardie -tn SportsClub')

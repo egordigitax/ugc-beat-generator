@@ -34,6 +34,10 @@ def initArgParse() -> argparse.ArgumentParser:
     def add_required_arguments() -> None:
         required.add_argument("-b", "--beat", help="set ups beat path (.wav)", type=str, required=True)
 
+        required.add_argument("-tn","--track_name", help="track name in app", type=str, required=True)
+
+        required.add_argument("-un", "--username", help="username in app", type=str, required=True)
+
         required.add_argument("-o", "--output_path",
                                     help="path to resulting frames path",
                                     type=str, required=True)
@@ -193,6 +197,8 @@ def main() -> None:
             )
 
             ugc_params = UGCParams(
+                username=args.username,
+                track_name=args.track_name,
                 avatar_path=args.avatar_path,
                 avatar_size=args.avatar_size,
                 framerate=args.framerate,

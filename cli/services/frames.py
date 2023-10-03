@@ -26,6 +26,8 @@ class FrameGeneratorParams:
 
 @dataclass
 class UGCParams:
+    username: str
+    track_name: str
     avatar_path: str
     avatar_size: int
     framerate: int
@@ -282,33 +284,6 @@ class FrameGenerator(BaseFrameGenerator):
     def process(self):
         cache = ProcessingCache()
 
-        self.__logger("opening avatar")
-
-        avatar = Image.open(self.__ugc_params.avatar_path)
-        avatar = avatar.convert("RGBA")
-        avatar = avatar.resize((self.__ugc_params.avatar_size, self.__ugc_params.avatar_size))
-        avatar.putalpha(255)
-
-        self.__logger("opened {}".format(avatar.mode))
-
-        self.__logger("opening background")
-
-        cache.background = Image.open(self.__ugc_params.avatar_path)
-        cache.background = cache.background.convert("RGBA")
-        cache.background.putalpha(255)
-
-        self.__logger("resizing background")
-
-        cache.background = cache.background.resize((self.__ugc_params.height, self.__ugc_params.height))
-
-        self.__logger("filtering background")
-
-        cache.background = cache.background.filter(ImageFilter.GaussianBlur(self.__ugc_params.blur_radius))
-
-        self.__logger("make corners")
-
-        cache.avatar = avatar
-
         self.__logger("forming duration")
 
         duration = math.ceil(self.__generator_params.waveform_generator.duration())
@@ -320,15 +295,32 @@ class FrameGenerator(BaseFrameGenerator):
         cache.intensities = \
             self.__generator_params.waveform_generator.process(self.__ugc_params.waveform_generator_params)
 
-        # cache.scene_sequence = self.__generator_params.graphics_generator.process_scene_frames()
+        self.__generator_params.graphics_generator.save_user_info_png(self.__ugc_params.username,
+                                                                      self.__ugc_params.track_name)
 
-        cache.user_info_sequence = self.__generator_params.graphics_generator.process_user_info_frames(
-            1,
-            720,
-            1280
+        self.__generator_params.graphics_generator.save_avatar(self.__ugc_params.avatar_path)
+
+
+        cache.scene_sequence = self.__generator_params.graphics_generator.process_scene_frames(
+            self.__ugc_params.graphics_generator_params.scene_template_id,
+            self.__ugc_params.width,
+            self.__ugc_params.height
         )
 
-        # cache.overlay_sequence = self.__generator_params.graphics_generator.process_overlay_frames()
+        cache.user_info_sequence = self.__generator_params.graphics_generator.process_user_info_frames(
+            self.__ugc_params.graphics_generator_params.user_info_template_id,
+            self.__ugc_params.width,
+            self.__ugc_params.height
+        )
+
+        if self.__ugc_params.graphics_generator_params.overlay_template_id:
+            cache.overlay_sequence = self.__generator_params.graphics_generator.process_overlay_frames(
+                self.__ugc_params.graphics_generator_params.overlay_template_id,
+                self.__ugc_params.width,
+                self.__ugc_params.height
+            )
+        else:
+            cache.overlay_sequence = None
 
         chunks = np.array_split(cache.intensities, cache.total_frames_count)
         cache.frames_intensity = [np.mean(i) for i in chunks]

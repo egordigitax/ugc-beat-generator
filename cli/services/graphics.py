@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import List
 from natsort import natsorted
-from PIL import Image, ImageDraw, ImageFont
+from PIL import Image, ImageDraw, ImageFont, ImageFilter
 
 from .engine.blender import BlenderEngine
 
@@ -37,10 +37,9 @@ class GraphicsGenerator:
         if self.verbose:
             print(msg)
 
-
     def process_scene_frames(self, scene_template_id, width, height) -> List[Path]:
         self.blender.render(f"sources/scenes/main/{scene_template_id}/project.blend",
-                            "output/renders/user", range(0, 105), width, height)
+                            "output/renders/main", range(0, 90), width, height)
         natsort_files = natsorted(os.listdir("output/renders/main/"))
         return [Path(f'output/renders/main/{file}') for file in natsort_files if file.endswith(".png")]
 
@@ -52,11 +51,17 @@ class GraphicsGenerator:
 
     def process_overlay_frames(self, overlay_template_id, width, height) -> List[Path]:
         self.blender.render(f"sources/scenes/overlay/{overlay_template_id}/project.blend",
-                            "output/renders/user", range(0, 105), width, height)
+                            "output/renders/overlay", range(0, 30), width, height)
         natsort_files = natsorted(os.listdir("output/renders/overlay/"))
         return [Path(f'output/renders/overlay/{file}') for file in natsort_files if file.endswith(".png")]
 
-    def get_user_info_png(self, username, track_name):
+    def save_avatar(self, avatar_path):
+        img = Image.open(avatar_path)
+        img_blur = img.filter(ImageFilter.GaussianBlur(50))
+        img.save('sources/images/avatar.png')
+        img_blur.save('sources/images/avatar-blur.png')
+
+    def save_user_info_png(self, username, track_name):
 
         def draw_text(ctx, y_offset, text, font, color):
             _, _, w, h = ctx.textbbox((0, 0), text, font=font)
