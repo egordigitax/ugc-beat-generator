@@ -8,7 +8,7 @@ RUN apk add --no-cache python3 py3-pip python3-dev build-base gfortran openblas 
 COPY . /cli/
 
 RUN pip3 install requirements.py
-RUN apt-get install llvm
+RUN apt install llvm
 RUN pip3 install librosa
 RUN bash /cli/setup.sh
 
