@@ -9,7 +9,7 @@ COPY . /cli/
 
 RUN pip3 install requirements.py
 RUN pip3 install librosa
+RUN bash /cli/setup.sh
 
-
-RUN python3 /cli/cli.py --demo --output_type=raw -b demo --shade_path demo -o /tmp -a demo
+RUN python3 /cli/test.py
 
