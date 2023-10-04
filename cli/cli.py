@@ -15,6 +15,8 @@ def initArgParse() -> argparse.ArgumentParser:
 
     misc = parser.add_argument_group("Misc Options")
     required = parser.add_argument_group("Required Options")
+    required_legacy = parser.add_argument_group("Required Options in Legacy mode")
+    required_new = parser.add_argument_group("Required Options in New mode")
     general = parser.add_argument_group("General Options")
     graphics = parser.add_argument_group("Graphic Rendering Options")
     music_analyzer = parser.add_argument_group("Music Analyzer Options")
@@ -34,10 +36,6 @@ def initArgParse() -> argparse.ArgumentParser:
     def add_required_arguments() -> None:
         required.add_argument("-b", "--beat", help="set ups beat path (.wav)", type=str, required=True)
 
-        required.add_argument("-tn","--track_name", help="track name in app", type=str, required=True)
-
-        required.add_argument("-un", "--username", help="username in app", type=str, required=True)
-
         required.add_argument("-o", "--output_path",
                                     help="path to resulting frames path",
                                     type=str, required=True)
@@ -45,6 +43,19 @@ def initArgParse() -> argparse.ArgumentParser:
         required.add_argument("-a", "--avatar_path",
                                     help="path to avatar (.png)",
                                     type=str, required=True)
+
+    # Required Options in Legacy mode
+    def add_required_legacy_arguments() -> None:
+
+        required_legacy.add_argument("--shade_path",
+                            help="required in legacy mode. path to shade image (alpha, .png)",
+                            type=str, default=None, required=False)
+
+    # Required Options in New mode
+    def add_required_new_arguments() -> None:
+        required_new.add_argument("-un", "--username", help="username in app", type=str, required=False)
+
+        required_new.add_argument("-tn", "--track_name", help="track name in app", type=str, required=False)
 
     # General Options
     def add_general_arguments() -> None:
@@ -67,6 +78,7 @@ def initArgParse() -> argparse.ArgumentParser:
 
     # Graphics Options
     def add_graphics_arguments() -> None:
+
         graphics.add_argument("--width",
                               help="target width",
                               type=int, default=720, required=False)
@@ -101,10 +113,6 @@ def initArgParse() -> argparse.ArgumentParser:
         graphics.add_argument("-f", "--framerate",
                             help="target framerate",
                             type=int, default=30, required=False)
-
-        graphics.add_argument("--shade_path",
-                            help="required in legacy mode. path to shade image (alpha, .png)",
-                            type=str, default=None, required=False)
 
         graphics.add_argument("--blur_radius",
                                   help="blur radius (intensity)",
@@ -144,6 +152,8 @@ def initArgParse() -> argparse.ArgumentParser:
 
     add_misc_arguments()
     add_required_arguments()
+    add_required_legacy_arguments()
+    add_required_new_arguments()
     add_general_arguments()
     add_graphics_arguments()
     add_music_analyzer_arguments()
@@ -158,6 +168,12 @@ def main() -> None:
     try:
         if args.legacy and not args.shade_path:
             raise Exception('--shade_path required while run in --legacy mode.')
+
+        if not args.legacy and not args.username:
+            raise Exception('--username required while run in normal mode.')
+
+        if not args.legacy and not args.track_name:
+            raise Exception('--track_name required while run in normal mode.')
 
         if args.demo:
             waveform_generator = WaveformLoader.load_demo(args.verbose)

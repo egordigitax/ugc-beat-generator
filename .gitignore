@@ -4,3 +4,4 @@ cli/__pycache__
 sdk
 __pycache__
 output/
+.DS_Store

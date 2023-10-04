@@ -26,4 +26,7 @@ from services.graphics import GraphicsGenerator
 #     print(f'resized.')
 #     new_image.save(path+'/'+file)
 os.system('rm output/final/*')
+os.system('rm output/renders/main/*')
+os.system('rm output/renders/overlay/*')
+os.system('rm output/renders/user/*')
 os.system('python cli.py -b tests/sources/demo.wav -o output/final/ -a tests/sources/demo.png --shade_path tests/sources/Shadow.png -t 1 -ot 1 -ut 1 -un Yardie -tn SportsClub')
