@@ -3,5 +3,3 @@ wget -O sdk/blender3.6.2.tar.xz https://ftp.nluug.nl/pub/graphics/blender/releas
 mkdir sdk/blender
 tar -xf sdk/blender3.6.2.tar.xz -C sdk/blender/
 rm sdk/blender3.6.2.tar.xz
-sudo apt install blender
-sudo apt-get install libsm6 libxrender1 libfontconfig1
