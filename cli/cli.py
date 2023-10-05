@@ -1,4 +1,6 @@
 import argparse
+import os
+import zipfile
 
 from services.graphics import GraphicsGeneratorParams, GraphicsGeneratorLoader
 from services.waveforms import WaveformLoader, WaveformGeneratorParams
@@ -24,6 +26,8 @@ def initArgParse() -> argparse.ArgumentParser:
     # Misc Options
     def add_misc_arguments() -> None:
         misc.add_argument("-h", "--help", action="help", help="show this help message and exit")
+
+        misc.add_argument("--update", action=UpdateAction, help="show this help message and exit")
 
         misc.add_argument("--version", action="version",
                           version=f"{parser.prog} version 1.3.0")
@@ -90,7 +94,7 @@ def initArgParse() -> argparse.ArgumentParser:
         graphics.add_argument("--use-cpu", required=False, default=False,
                               action='store_true', help="use cpu computing device")
 
-        graphics.add_argument("--enable-intro", required=False, default=False,
+        graphics.add_argument("--disable-intro", required=False, default=False,
                               action='store_true', help="adds intro to the beginning of the video "
                                                         "(reversed sequence animation)")
 
@@ -117,6 +121,10 @@ def initArgParse() -> argparse.ArgumentParser:
         graphics.add_argument("--blur_radius",
                                   help="blur radius (intensity)",
                                   type=int, default=50, required=False)
+
+        graphics.add_argument("--overlay_opacity",
+                                  help="overlay transparency intensity",
+                                  type=float, default=0.25, required=False)
 
         graphics.add_argument("--avatar_size",
                                   help="avatar new size",
@@ -196,11 +204,7 @@ def main() -> None:
             scene_template_id=args.template_id,
             user_info_template_id=args.user_info_template_id,
             overlay_template_id=args.overlay_template_id,
-            enable_intro=args.enable_intro,
-            avatar_path=args.avatar_path,
-            width=args.width,
-            height=args.height,
-            blur_radius=args.blur_radius
+            disable_intro=args.disable_intro
         )
 
         if args.output_type == "frames":
@@ -221,6 +225,7 @@ def main() -> None:
                 width=args.width,
                 height=args.height,
                 blur_radius=args.blur_radius,
+                overlay_opacity=args.overlay_opacity,
                 waveform_generator_params=waveform_generator_params,
                 graphics_generator_params=graphics_generator_params
             )
@@ -236,6 +241,13 @@ def main() -> None:
     except Exception as err:
         print(err, file=sys.stderr)
 
+
+class UpdateAction(argparse.Action):
+    def __call__(self, parser, args, values, option_string=None):
+        os.system(f'wget -O scenes.zip {values}')
+        with zipfile.ZipFile("scenes.zip", 'r') as zip_ref:
+            zip_ref.extractall("sources")
+        os.system("rm scences.zip")
 
 if __name__ == "__main__":
     main()

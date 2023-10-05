@@ -1,11 +1,17 @@
 import os
+import sys
 from dataclasses import dataclass
 from pathlib import Path
 from typing import List
 from natsort import natsorted
 from PIL import Image, ImageDraw, ImageFont, ImageFilter
 
+here = os.path.dirname(__file__)
+sys.path.append(os.path.join(here, '..'))
+
 from .engine.blender import BlenderEngine
+from settings import BLENDER_PATH, SCENE_SOURCE, PROJECT_FILE, SCENE_OUTPUT, USER_SOURCE, USER_OUTPUT, OVERLAY_SOURCE, \
+    OVERLAY_OUTPUT, AVATAR_STORE, AVATAR_BLUR, USER_INFO_IMG, USER_INFO_FONT
 
 
 @dataclass
@@ -13,11 +19,7 @@ class GraphicsGeneratorParams:
     scene_template_id: int
     user_info_template_id: int
     overlay_template_id: int
-    enable_intro: bool
-    avatar_path: str
-    width: int
-    height: int
-    blur_radius: int
+    disable_intro: bool
 
 
 class GraphicsGeneratorInterface:
@@ -31,35 +33,52 @@ class GraphicsGeneratorInterface:
 class GraphicsGenerator:
     def __init__(self, verbose: bool):
         self.verbose = verbose
-        self.blender = BlenderEngine("sdk/blender/blender-3.6.2-linux-x64/blender")
+        self.blender = BlenderEngine(BLENDER_PATH)
 
     def __logger(self, msg):
         if self.verbose:
             print(msg)
 
     def process_scene_frames(self, scene_template_id, width, height) -> List[Path]:
-        self.blender.render(f"sources/scenes/main/{scene_template_id}/project.blend",
-                            "output/renders/main", range(0, 90), width, height)
-        natsort_files = natsorted(os.listdir("output/renders/main/"))
-        return [Path(f'output/renders/main/{file}') for file in natsort_files if file.endswith(".png")]
+
+        if not os.path.exists(f"{SCENE_SOURCE}/{scene_template_id}/{PROJECT_FILE}"):
+            natsort_files = natsorted(os.listdir(SCENE_SOURCE))
+            return [Path(f'{SCENE_SOURCE}/{file}') for file in natsort_files if file.endswith(".png")]
+
+        self.blender.render(f"{SCENE_SOURCE}/{scene_template_id}/{PROJECT_FILE}",
+                            SCENE_OUTPUT, range(0, 90), width, height)
+
+        natsort_files = natsorted(os.listdir(SCENE_OUTPUT))
+        return [Path(f'{SCENE_OUTPUT}/{file}') for file in natsort_files if file.endswith(".png")]
 
     def process_user_info_frames(self, user_info_template_id, width, height) -> List[Path]:
-        self.blender.render(f"sources/scenes/user/{user_info_template_id}/project.blend",
-                            "output/renders/user", range(0, 105), width, height)
-        natsort_files = natsorted(os.listdir("output/renders/user/"))
-        return [Path(f'output/renders/user/{file}') for file in natsort_files if file.endswith(".png")]
+
+        if not os.path.exists(f"{USER_SOURCE}/{user_info_template_id}/{PROJECT_FILE}"):
+            natsort_files = natsorted(os.listdir(USER_SOURCE))
+            return [Path(f'{USER_SOURCE}/{file}') for file in natsort_files if file.endswith(".png")]
+
+        self.blender.render(f"{USER_SOURCE}/{user_info_template_id}/{PROJECT_FILE}",
+                            USER_OUTPUT, range(0, 105), width, height)
+
+        natsort_files = natsorted(os.listdir(USER_OUTPUT))
+        return [Path(f'{USER_OUTPUT}/{file}') for file in natsort_files if file.endswith(".png")]
 
     def process_overlay_frames(self, overlay_template_id, width, height) -> List[Path]:
-        self.blender.render(f"sources/scenes/overlay/{overlay_template_id}/project.blend",
-                            "output/renders/overlay", range(0, 30), width, height)
-        natsort_files = natsorted(os.listdir("output/renders/overlay/"))
-        return [Path(f'output/renders/overlay/{file}') for file in natsort_files if file.endswith(".png")]
+
+        if not os.path.exists(f"{OVERLAY_SOURCE}/{overlay_template_id}/{PROJECT_FILE}"):
+            natsort_files = natsorted(os.listdir(OVERLAY_SOURCE))
+            return [Path(f'{OVERLAY_SOURCE}/{file}') for file in natsort_files if file.endswith(".png")]
+
+        self.blender.render(f"{OVERLAY_SOURCE}/{overlay_template_id}/{PROJECT_FILE}",
+                            OVERLAY_OUTPUT, range(0, 30), width, height)
+        natsort_files = natsorted(os.listdir(OVERLAY_OUTPUT))
+        return [Path(f'{OVERLAY_OUTPUT}/{file}') for file in natsort_files if file.endswith(".png")]
 
     def save_avatar(self, avatar_path):
         img = Image.open(avatar_path)
         img_blur = img.filter(ImageFilter.GaussianBlur(50))
-        img.save('sources/images/avatar.png')
-        img_blur.save('sources/images/avatar-blur.png')
+        img.save(AVATAR_STORE)
+        img_blur.save(AVATAR_BLUR)
 
     def save_user_info_png(self, username, track_name):
 
@@ -77,13 +96,13 @@ class GraphicsGenerator:
         main_font_size = 125 if len(username) < 7 else 90
 
         canvas_draw = ImageDraw.Draw(canvas)
-        main_font = ImageFont.truetype("sources/fonts/Druk Text Wide Cyr Medium.otf", main_font_size)
-        secondary_font = ImageFont.truetype("sources/fonts/Druk Text Wide Cyr Medium.otf", 65)
+        main_font = ImageFont.truetype(USER_INFO_FONT, main_font_size)
+        secondary_font = ImageFont.truetype(USER_INFO_FONT, 65)
 
         draw_text(canvas_draw, -75, _username, main_font, (0,0,0))
         draw_text(canvas_draw, 25, _track_name, secondary_font, (0,0,0))
 
-        canvas.save("sources/images/user-info.png")
+        canvas.save(USER_INFO_IMG)
 
 class GraphicsGeneratorLoader:
     @staticmethod

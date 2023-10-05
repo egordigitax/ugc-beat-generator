@@ -3,7 +3,7 @@ from typing import List
 
 from PIL import ImageDraw
 
-from .graphics import GraphicsGeneratorInterface, GraphicsGeneratorParams, GraphicsGenerator
+from .graphics import GraphicsGeneratorParams, GraphicsGenerator
 from .waveforms import WaveformGeneratorInterface, WaveformGeneratorParams
 from dataclasses import dataclass
 from PIL import Image, ImageFilter
@@ -11,8 +11,7 @@ import blend_modes
 import numpy as np
 import math
 from joblib import Parallel, delayed
-from functools import wraps
-import time
+
 
 
 @dataclass
@@ -34,6 +33,7 @@ class UGCParams:
     width: int
     height: int
     blur_radius: int
+    overlay_opacity: float
     waveform_generator_params: WaveformGeneratorParams
     graphics_generator_params: GraphicsGeneratorParams
 
@@ -221,8 +221,9 @@ class FrameGenerator(BaseFrameGenerator):
         if not overlay_frame:
             return frame
 
-        frame = self.np_to_img(blend_modes.overlay(self.img_to_np(frame), self.img_to_np(overlay_frame), 0.1))
-        # можно использовать intensity
+        frame = self.np_to_img(blend_modes.overlay(self.img_to_np(frame), self.img_to_np(overlay_frame),
+                                                   self.__ugc_params.overlay_opacity))
+        # можно использовать intensity для динамического изменения
         return frame
 
     def __create_save_frame_img(self,
@@ -253,7 +254,7 @@ class FrameGenerator(BaseFrameGenerator):
                 return None
 
         def get_main_scene_frames(_intensity, _cache):
-            if frame_num >= len(_cache.scene_sequence):
+            if frame_num >= len(_cache.scene_sequence) and not self.__ugc_params.graphics_generator_params.disable_intro:
                 return Image.open(_cache.scene_sequence[round(_intensity * (len(cache.scene_sequence) - 1))])
             else:
                 return Image.open(_cache.scene_sequence[-frame_num - 1])
