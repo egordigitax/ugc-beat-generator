@@ -194,18 +194,20 @@ class FrameGenerator(BaseFrameGenerator):
         if self.__verbose:
             print(msg)
 
-    def create_frame(self, intensity: float, avatar: Image.Image, background: Image.Image) -> Image.Image:
-        raise NotImplemented
-
-    def img_to_np(self, image: Image.Image):
+    @staticmethod
+    def img_to_np(image: Image.Image):
         np_arr = np.array(image)
         np_float = np_arr.astype(float)
         return np_float
 
-    def np_to_img(self, np_float):
+    @staticmethod
+    def np_to_img(np_float):
         img_decode = np.uint8(np_float)
         image = Image.fromarray(img_decode)
         return image
+
+    def create_frame(self, intensity: float, avatar: Image.Image, background: Image.Image) -> Image.Image:
+        raise NotImplemented
 
     def __create_save_frame_img_proto(self,
                                       intensity: float,
@@ -223,7 +225,7 @@ class FrameGenerator(BaseFrameGenerator):
 
         frame = self.np_to_img(blend_modes.overlay(self.img_to_np(frame), self.img_to_np(overlay_frame),
                                                    self.__ugc_params.overlay_opacity))
-        # можно использовать intensity для динамического изменения
+        # можно использовать intensity для динамического изменения прозрачности оверлея
         return frame
 
     def __create_save_frame_img(self,

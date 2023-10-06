@@ -45,6 +45,8 @@ class GraphicsGenerator:
             natsort_files = natsorted(os.listdir(SCENE_SOURCE))
             return [Path(f'{SCENE_SOURCE}/{file}') for file in natsort_files if file.endswith(".png")]
 
+        # если не находит .blend файл в папке темлейта, то импортирует как png sequence
+
         self.blender.render(f"{SCENE_SOURCE}/{scene_template_id}/{PROJECT_FILE}",
                             SCENE_OUTPUT, range(0, 90), width, height)
 
@@ -56,6 +58,8 @@ class GraphicsGenerator:
         if not os.path.exists(f"{USER_SOURCE}/{user_info_template_id}/{PROJECT_FILE}"):
             natsort_files = natsorted(os.listdir(USER_SOURCE))
             return [Path(f'{USER_SOURCE}/{file}') for file in natsort_files if file.endswith(".png")]
+
+        # если не находит .blend файл в папке темлейта, то импортирует как png sequence
 
         self.blender.render(f"{USER_SOURCE}/{user_info_template_id}/{PROJECT_FILE}",
                             USER_OUTPUT, range(0, 105), width, height)
@@ -69,6 +73,8 @@ class GraphicsGenerator:
             natsort_files = natsorted(os.listdir(OVERLAY_SOURCE))
             return [Path(f'{OVERLAY_SOURCE}/{file}') for file in natsort_files if file.endswith(".png")]
 
+        # если не находит .blend файл в папке темлейта, то импортирует как png sequence
+
         self.blender.render(f"{OVERLAY_SOURCE}/{overlay_template_id}/{PROJECT_FILE}",
                             OVERLAY_OUTPUT, range(0, 30), width, height)
         natsort_files = natsorted(os.listdir(OVERLAY_OUTPUT))
@@ -80,7 +86,9 @@ class GraphicsGenerator:
         img.save(AVATAR_STORE)
         img_blur.save(AVATAR_BLUR)
 
-    def save_user_info_png(self, username, track_name):
+    @staticmethod
+    def save_user_info_png(username, track_name):
+        # сборка текстуры для user-info сцены
 
         def draw_text(ctx, y_offset, text, font, color):
             _, _, w, h = ctx.textbbox((0, 0), text, font=font)
