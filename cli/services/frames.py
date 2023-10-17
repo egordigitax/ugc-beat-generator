@@ -13,7 +13,6 @@ import math
 from joblib import Parallel, delayed
 
 
-
 @dataclass
 class FrameGeneratorParams:
     shade_path: str
@@ -256,7 +255,8 @@ class FrameGenerator(BaseFrameGenerator):
                 return None
 
         def get_main_scene_frames(_intensity, _cache):
-            if frame_num >= len(_cache.scene_sequence) and not self.__ugc_params.graphics_generator_params.disable_intro:
+            if frame_num >= len(
+                    _cache.scene_sequence) and not self.__ugc_params.graphics_generator_params.disable_intro:
                 return Image.open(_cache.scene_sequence[round(_intensity * (len(cache.scene_sequence) - 1))])
             else:
                 return Image.open(_cache.scene_sequence[-frame_num - 1])
@@ -303,7 +303,6 @@ class FrameGenerator(BaseFrameGenerator):
 
         self.__generator_params.graphics_generator.save_avatar(self.__ugc_params.avatar_path)
 
-
         cache.scene_sequence = self.__generator_params.graphics_generator.process_scene_frames(
             self.__ugc_params.graphics_generator_params.scene_template_id,
             self.__ugc_params.width,
@@ -335,9 +334,11 @@ class FrameGenerator(BaseFrameGenerator):
 class FrameGeneratorLoader:
     @staticmethod
     def load(generator_params: FrameGeneratorParams,
-             ugc_params: UGCParams, verbose: bool, legacy: bool) -> BaseFrameGenerator:
+             ugc_params: UGCParams, verbose: bool, mode: str) -> BaseFrameGenerator:
 
-        if legacy:
+        if mode.lower() == "classic":
             return FrameGeneratorLegacy(generator_params, ugc_params, verbose)
-        else:
+        elif mode.lower() == "blender":
             return FrameGenerator(generator_params, ugc_params, verbose)
+        else:
+            raise NotImplemented

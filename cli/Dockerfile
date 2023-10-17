@@ -1,28 +1,34 @@
-FROM tensorflow/tensorflow:2.3.0
+FROM ubuntu:22.04
 
-WORKDIR /cli
+ENV DEBIAN_FRONTEND="noninteractive"
 
 RUN apt-get update && \
     apt-get install -y software-properties-common && \
-    add-apt-repository ppa:savoury1/graphics && \
-    add-apt-repository ppa:savoury1/multimedia && \
-    add-apt-repository ppa:savoury1/ffmpeg4 && \
-    apt-get update && apt-get upgrade -y && apt-get install -y \
-        gcc \
-        libc-dev \
-	cmake \
-        libxslt-dev \
-        libxml2-dev python3 py3-pip python3-dev build-base gfortran openblas openblas-dev \
-        libffi-dev linux-headers llvm libsm6 libxrender1 libfontconfig1 blender \
-        libssl-dev \
-	libsndfile-dev \
-	ffmpeg \
-	&& rm -rf /var/lib/apt/lists/* \
+    add-apt-repository -y ppa:deadsnakes/ppa && \
+    apt-get install -y --no-install-recommends \
+        python3.9 \
+        python3.9-distutils \
+        python3-pip \
+        wget \
+        libsndfile-dev \
+        openjdk-17-jdk\
+        tzdata \
+        ca-certificates \
+        curl \
+        blender \
+        libsm6 \
+        libxrender1 \
+        libfontconfig1 \
+        locales && \
+    rm -rf /var/lib/apt/lists/*
 
-COPY . /cli/
+WORKDIR /app
 
-RUN pip3 install requirements.py
-RUN bash /cli/setup.sh
+COPY . /app
 
-RUN python3 /cli/test.py
+RUN bash setup.sh
 
+RUN pip3 install -r requirements.txt
+
+
+ENTRYPOINT ["python3", "test.py"]

@@ -38,6 +38,11 @@ def initArgParse() -> argparse.ArgumentParser:
 
     # Required Options
     def add_required_arguments() -> None:
+        required.add_argument("-m", "--mode",
+                              help="run gen in specified mode (classic | blender)",
+                              type=str,
+                              required=True)
+
         required.add_argument("-b", "--beat", help="set ups beat path (.wav)", type=str, required=True)
 
         required.add_argument("-o", "--output_path",
@@ -48,25 +53,14 @@ def initArgParse() -> argparse.ArgumentParser:
                                     help="path to avatar (.png)",
                                     type=str, required=True)
 
-    # Required Options in Legacy mode
-    def add_required_legacy_arguments() -> None:
-
-        required_legacy.add_argument("--shade_path",
-                            help="required in legacy mode. path to shade image (alpha, .png)",
-                            type=str, default=None, required=False)
-
-    # Required Options in New mode
-    def add_required_new_arguments() -> None:
+    # Required Options in Blender mode
+    def add_required_blender_arguments() -> None:
         required_new.add_argument("-un", "--username", help="username in app", type=str, required=False)
 
         required_new.add_argument("-tn", "--track_name", help="track name in app", type=str, required=False)
 
     # General Options
     def add_general_arguments() -> None:
-        general.add_argument("--legacy",
-                            help="uses legacy version of generator",
-                            required=False, action='store_true')
-
         general.add_argument("-j", "--jobs",
                             help="number of parallel jobs",
                             type=int, default=16, required=False)
@@ -129,6 +123,9 @@ def initArgParse() -> argparse.ArgumentParser:
         graphics.add_argument("--avatar_size",
                                   help="avatar new size",
                                   type=int, default=400, required=False)
+        graphics.add_argument("--shade_path",
+                      help="path to shade image (alpha, .png) / only for classic mode",
+                      type=str, default="sources/images/shade.png", required=False)
 
     # Music Analyzer Options
     def add_music_analyzer_arguments() -> None:
@@ -160,8 +157,7 @@ def initArgParse() -> argparse.ArgumentParser:
 
     add_misc_arguments()
     add_required_arguments()
-    add_required_legacy_arguments()
-    add_required_new_arguments()
+    add_required_blender_arguments()
     add_general_arguments()
     add_graphics_arguments()
     add_music_analyzer_arguments()
@@ -174,14 +170,12 @@ def main() -> None:
     args = parser.parse_args()
 
     try:
-        if args.legacy and not args.shade_path:
-            raise Exception('--shade_path required while run in --legacy mode.')
 
-        if not args.legacy and not args.username:
-            raise Exception('--username required while run in normal mode.')
+        if not args.mode.lower() == "blender" and not args.username:
+            raise Exception('--username required while run in blender mode.')
 
-        if not args.legacy and not args.track_name:
-            raise Exception('--track_name required while run in normal mode.')
+        if not args.mode.lower() == "blender" and not args.track_name:
+            raise Exception('--track_name required while run in blender mode.')
 
         if args.demo:
             waveform_generator = WaveformLoader.load_demo(args.verbose)
@@ -230,7 +224,7 @@ def main() -> None:
                 graphics_generator_params=graphics_generator_params
             )
 
-            FrameGeneratorLoader.load(generator_params, ugc_params, args.verbose, args.legacy).process()
+            FrameGeneratorLoader.load(generator_params, ugc_params, args.verbose, args.mode).process()
 
         elif args.output_type == "raw":
             intensities = waveform_generator.process(waveform_generator_params)
