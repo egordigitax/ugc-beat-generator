@@ -46,12 +46,12 @@ def initArgParse() -> argparse.ArgumentParser:
         required.add_argument("-b", "--beat", help="set ups beat path (.wav)", type=str, required=True)
 
         required.add_argument("-o", "--output_path",
-                                    help="path to resulting frames path",
-                                    type=str, required=True)
+                              help="path to resulting frames path",
+                              type=str, required=True)
 
         required.add_argument("-a", "--avatar_path",
-                                    help="path to avatar (.png)",
-                                    type=str, required=True)
+                              help="path to avatar (.png)",
+                              type=str, required=True)
 
     # Required Options in Blender mode
     def add_required_blender_arguments() -> None:
@@ -62,21 +62,21 @@ def initArgParse() -> argparse.ArgumentParser:
     # General Options
     def add_general_arguments() -> None:
         general.add_argument("-j", "--jobs",
-                            help="number of parallel jobs",
-                            type=int, default=16, required=False)
+                             help="number of parallel jobs",
+                             type=int, default=16, required=False)
 
         general.add_argument("-v", "--verbose",
-                            help="verbose computations",
-                            action='store_true', required=False, default=False)
+                             help="verbose computations",
+                             action='store_true', required=False, default=False)
 
         general.add_argument("--output_type", help="select output presentation. available types: \n "
-                                                  "* frames (--output_type=frames) \n"
-                                                  "* raw (--output_type=raw)\n",
-                            default="frames", type=str, required=False)
+                                                   "* frames (--output_type=frames) \n"
+                                                   "* raw (--output_type=raw)\n"
+                                                   "* preview (--output_type=preview)\n",
+                             default="frames", type=str, required=False)
 
     # Graphics Options
     def add_graphics_arguments() -> None:
-
         graphics.add_argument("--width",
                               help="target width",
                               type=int, default=720, required=False)
@@ -109,51 +109,51 @@ def initArgParse() -> argparse.ArgumentParser:
                               type=int, required=False)
 
         graphics.add_argument("-f", "--framerate",
-                            help="target framerate",
-                            type=int, default=30, required=False)
+                              help="target framerate",
+                              type=int, default=30, required=False)
 
         graphics.add_argument("--blur_radius",
-                                  help="blur radius (intensity)",
-                                  type=int, default=50, required=False)
+                              help="blur radius (intensity)",
+                              type=int, default=50, required=False)
 
         graphics.add_argument("--overlay_opacity",
-                                  help="overlay transparency intensity",
-                                  type=float, default=0.25, required=False)
+                              help="overlay transparency intensity",
+                              type=float, default=0.25, required=False)
 
         graphics.add_argument("--avatar_size",
-                                  help="avatar new size",
-                                  type=int, default=400, required=False)
+                              help="avatar new size",
+                              type=int, default=400, required=False)
         graphics.add_argument("--shade_path",
-                      help="path to shade image (alpha, .png) / only for classic mode",
-                      type=str, default="sources/images/shade.png", required=False)
+                              help="path to shade image (alpha, .png) / only for classic mode",
+                              type=str, default="sources/images/shade.png", required=False)
 
     # Music Analyzer Options
     def add_music_analyzer_arguments() -> None:
         music_analyzer.add_argument("-s", "--smooth",
-                            help="set smooth factor by int value\nthe less -- the smoother",
-                            default=8, type=int, required=False)
+                                    help="set smooth factor by int value\nthe less -- the smoother",
+                                    default=8, type=int, required=False)
 
         music_analyzer.add_argument("-w", "--widening",
-                            help="set widening factor by float value\nthe less -- the smoother",
-                            default=0.5, type=float, required=False)
+                                    help="set widening factor by float value\nthe less -- the smoother",
+                                    default=0.5, type=float, required=False)
 
         music_analyzer.add_argument("--percussive_influence",
-                            help="set percussive part influence (0.0 -- 1.0)\n",
-                            default=0.5, type=float, required=False)
+                                    help="set percussive part influence (0.0 -- 1.0)\n",
+                                    default=0.5, type=float, required=False)
 
         music_analyzer.add_argument("--harmonic_influence",
-                            help="set harmonic part influence (0.0 -- 1.0)\n",
-                            default=0.5, type=float, required=False)
+                                    help="set harmonic part influence (0.0 -- 1.0)\n",
+                                    default=0.5, type=float, required=False)
 
         music_analyzer.add_argument("--percussive_margin",
-                            help="set percussive part isolation"
-                                 "\n 1.0 -- default, more -- more isolated\n",
-                            default=1.0, type=float, required=False)
+                                    help="set percussive part isolation"
+                                         "\n 1.0 -- default, more -- more isolated\n",
+                                    default=1.0, type=float, required=False)
 
         music_analyzer.add_argument("--harmonic_margin",
-                            help="set harmonic part isolation"
-                                 "\n 1.0 -- default, more -- more isolated\n",
-                            default=1.0, type=float, required=False)
+                                    help="set harmonic part isolation"
+                                         "\n 1.0 -- default, more -- more isolated\n",
+                                    default=1.0, type=float, required=False)
 
     add_misc_arguments()
     add_required_arguments()
@@ -170,20 +170,21 @@ def main() -> None:
     args = parser.parse_args()
 
     try:
-
         if not args.mode.lower() == "blender" and not args.username:
             raise Exception('--username required while run in blender mode.')
 
         if not args.mode.lower() == "blender" and not args.track_name:
             raise Exception('--track_name required while run in blender mode.')
 
+        graphics_generator = GraphicsGeneratorLoader.load(args.verbose)
+        if args.output_type == "preview":
+            print(123)
+
         if args.demo:
             waveform_generator = WaveformLoader.load_demo(args.verbose)
             args.framerate = 2
         else:
             waveform_generator = WaveformLoader.load(args.beat, args.verbose)
-
-        graphics_generator = GraphicsGeneratorLoader.load(args.verbose)
 
         waveform_generator_params = WaveformGeneratorParams(
             smooth_factor=args.smooth,
@@ -242,6 +243,7 @@ class UpdateAction(argparse.Action):
         with zipfile.ZipFile("scenes.zip", 'r') as zip_ref:
             zip_ref.extractall("sources")
         os.system("rm scences.zip")
+
 
 if __name__ == "__main__":
     main()
